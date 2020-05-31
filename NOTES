@@ -1,11 +1,15 @@
-https://github.com/pacew/meet.git
+git clone https://github.com/pacew/meet.git
 
 
-htpasswd -c /etc/apache2/htpasswd meet
+sudo htpasswd -c /etc/apache2/htpasswd meet
 
 in directory context
+
+sudo emacs /etc/apache2/sites-available/meet.pacew.org.conf
 
 AuthType Basic
 AuthName "authorization required"
 AuthUserFile /etc/apache2/htpasswd
 Require valid-user
+
+sudo /etc/init.d/apache2 restart
