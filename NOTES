@@ -22,7 +22,7 @@ sudo emacs /etc/jitsi/jicofo/sip-communicator.properties
 add line:
 org.jitsi.jicofo.auth.URL=XMPP:meet.pacew.org
 
-
+sudo prosodyctl register USERNAME meet.pacew.org PASSWORD
 
 sudo systemctl restart prosody.service
 sudo systemctl restart jicofo.service
