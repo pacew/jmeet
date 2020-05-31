@@ -3,31 +3,71 @@
 import sys
 import os
 import subprocess
+import shlex
+import re
 
 yes_flag = False
 
-def cmd(str):
+def run(str):
     print(str)
     if yes_flag:
         ret = subprocess.run(str, 
                              shell=True, 
                              stdin = subprocess.DEVNULL,
-                             stdout = subprocess.PIPE, 
-                             stderr = subprocess.STDOUT,
                              encoding = "utf8")
-        output = ret.stdout.strip()
-        if output != "":
-            print(output)
         if ret.returncode != 0:
             print("exit code", ret.returncode)
             sys.exit(1)
 
+keyring_basename = "jitsi-keyring.gpg"
+keyring_dir = "/usr/share/keyrings"
+keyring = os.path.join (keyring_dir, keyring_basename)
+
+jitsi_stable_list = "/etc/apt/sources.list.d/jitsi-stable.list"
+
 def setup_keyring():
-    keyring = "jitsi-keyring.gpg"
-    keyring_dir = "/usr/share/keyrings"
-    keyring_fullname = os.path.join (keyring_dir, keyring)
-    if not os.path.isfile (keyring_fullname):
-        cmd(f"sudo cp {keyring} {keyring_fullname}")
+    if not os.path.isfile(keyring):
+        run(f"sudo cp {keyring_basename} {keyring}")
+
+def setup_apt_sources():
+    if not os.path.isfile(jitsi_stable_list):
+        text = f"deb [signed-by={keyring}] https://download.jitsi.org stable/"
+        cmd = ("echo {} | sudo tee {} > /dev/null"
+               .format(shlex.quote(text), jitsi_stable_list))
+        run(cmd)
+        run("sudo apt update")
+
+def fix_certs():
+    wild_basename = "/etc/apache2/wildcard.pacew.org"
+    wild = dict()
+    ret = subprocess.run(f"sudo sh -c 'cksum {wild_basename}.*'",
+                         shell=True,
+                         stdout = subprocess.PIPE,
+                         encoding = 'utf8')
+    for line in ret.stdout.strip().split("\n"):
+        cols = line.split()
+        wild[cols[2]] = cols[0]
+
+    ret = subprocess.run("sudo sh -c 'cksum /etc/prosody/certs/*'", 
+                         shell=True, 
+                         stdout = subprocess.PIPE,
+                         encoding = "utf8")
+
+    for line in ret.stdout.strip().split("\n"):
+        if re.search('localhost', line):
+            continue
+        ret = re.search('.*[.](key|crt)$', line)
+        if ret is not None:
+            ext = ret.group(1)
+            src = f"{wild_basename}.{ext}"
+            want = wild[src]
+
+            cols = line.split()
+            dest = cols[2]
+            have = cols[0]
+
+            if want != have:
+                run(f"sudo cp {src} {dest}")
 
 def main():
     global yes_flag
@@ -36,7 +76,11 @@ def main():
         yes_flag = True
 
     setup_keyring()
+    setup_apt_sources()
 
+    run("sudo apt install jitsi-meet -y")
+
+    fix_certs()
 
 if __name__ == "__main__":
     main()
