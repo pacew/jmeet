@@ -1,15 +1,29 @@
 git clone https://github.com/pacew/meet.git
 
 
-sudo htpasswd -c /etc/apache2/htpasswd meet
+sudo emacs /etc/prosody/conf.avail/meet.pacew.org.cfg.lua
 
-in directory context
+change authentication to "internal_plain"
 
-sudo emacs /etc/apache2/sites-available/meet.pacew.org.conf
+add to end:
 
-AuthType Basic
-AuthName "authorization required"
-AuthUserFile /etc/apache2/htpasswd
-Require valid-user
+VirtualHost "guest.meet.pacew.org"
+    authentication = "anonymous"
+    c2s_require_encryption = false
 
-sudo /etc/init.d/apache2 restart
+sudo emacs /etc/jitsi/meet/meet.pacew.org-config.js
+
+uncomment:
+  anonymousdomain: 'guest.meet.pacew.org',
+
+
+sudo emacs /etc/jitsi/jicofo/sip-communicator.properties
+
+add line:
+org.jitsi.jicofo.auth.URL=XMPP:meet.pacew.org
+
+
+
+sudo systemctl restart prosody.service
+sudo systemctl restart jicofo.service
+sudo systemctl restart jitsi-videobridge2.service
