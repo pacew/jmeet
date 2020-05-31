@@ -1,0 +1,11 @@
+https://github.com/pacew/meet.git
+
+
+htpasswd -c /etc/apache2/htpasswd meet
+
+in directory context
+
+AuthType Basic
+AuthName "authorization required"
+AuthUserFile /etc/apache2/htpasswd
+Require valid-user

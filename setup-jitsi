@@ -69,11 +69,13 @@ def main():
 
     setup_keyring()
     setup_apt_sources()
-    setup_certs()
 
     if not os.path.isdir("/etc/jitsi"):
         print("now run")
         print("sudo apt install jitsi-meet")
+        sys.exit(0)
+
+    setup_certs()
 
     if not os.path.isfile("/etc/apache2/htpasswd"):
         print("see NOTES about htpasswd")
