@@ -1,0 +1,42 @@
+#! /usr/bin/env python3
+
+import sys
+import os
+import subprocess
+
+yes_flag = False
+
+def cmd(str):
+    print(str)
+    if yes_flag:
+        ret = subprocess.run(str, 
+                             shell=True, 
+                             stdin = subprocess.DEVNULL,
+                             stdout = subprocess.PIPE, 
+                             stderr = subprocess.STDOUT,
+                             encoding = "utf8")
+        output = ret.stdout.strip()
+        if output != "":
+            print(output)
+        if ret.returncode != 0:
+            print("exit code", ret.returncode)
+            sys.exit(1)
+
+def setup_keyring():
+    keyring = "jitsi-keyring.gpg"
+    keyring_dir = "/usr/share/keyrings"
+    keyring_fullname = os.path.join (keyring_dir, keyring)
+    if not os.path.isfile (keyring_fullname):
+        cmd(f"sudo cp {keyring} {keyring_fullname}")
+
+def main():
+    global yes_flag
+    
+    if len(sys.argv) > 1 and sys.argv[1] == "-y":
+        yes_flag = True
+
+    setup_keyring()
+
+
+if __name__ == "__main__":
+    main()
