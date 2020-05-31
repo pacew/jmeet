@@ -37,62 +37,38 @@ def setup_apt_sources():
         run(cmd)
         run("sudo apt update")
 
-def fix_certs():
-    wild_basename = "/etc/apache2/wildcard.pacew.org"
-    wild = dict()
-    ret = subprocess.run(f"sudo sh -c 'cksum {wild_basename}.*'",
-                         shell=True,
-                         stdout = subprocess.PIPE,
-                         encoding = 'utf8')
-    for line in ret.stdout.strip().split("\n"):
-        cols = line.split()
-        wild[cols[2]] = cols[0]
-
-    ret = subprocess.run("sudo sh -c 'cksum /etc/prosody/certs/*'", 
-                         shell=True, 
-                         stdout = subprocess.PIPE,
-                         encoding = "utf8")
-
-    for line in ret.stdout.strip().split("\n"):
-        if re.search('localhost', line):
-            continue
-        ret = re.search('.*[.](key|crt)$', line)
-        if ret is not None:
-            ext = ret.group(1)
-            src = f"{wild_basename}.{ext}"
-            want = wild[src]
-
-            cols = line.split()
-            dest = cols[2]
-            have = cols[0]
-
-            if want != have:
-                run(f"sudo cp {src} {dest}")
-
-def certs_pre():
+def setup_certs():
     if not os.path.isfile("/etc/ssl/meet.pacew.org.crt"):
         run(("sudo cp /etc/apache2/wildcard.pacew.org.key"
              " /etc/ssl/meet.pacew.org.key"))
         run(("sudo cp /etc/apache2/wildcard.pacew.org.crt"
              " /etc/ssl/meet.pacew.org.crt"))
 
+    if os.path.isdir("/etc/jitsi/meet"):
+        run(("sudo cp /etc/apache2/wildcard.pacew.org.key"
+             " /etc/jitsi/meet/meet.pacew.org.key"))
+        run(("sudo cp /etc/apache2/wildcard.pacew.org.crt"
+             " /etc/jitsi/meet/meet.pacew.org.crt"))
+        
+
 def main():
     global yes_flag
     
-    if len(sys.argv) > 1 and sys.argv[1] == "-y":
-        yes_flag = True
-
     if not os.path.isfile("/etc/apache2/wildcard.pacew.org.crt"):
         print("need to push the wildcard first")
         sys.exit(1)
 
+    if len(sys.argv) > 1 and sys.argv[1] == "-y":
+        yes_flag = True
+
     setup_keyring()
     setup_apt_sources()
-
-    certs_pre()
+    setup_certs()
 
     print("now run")
     print("sudo apt install jitsi-meet")
+
+    print("then see NOTES about htpasswd")
 
 if __name__ == "__main__":
     main()
