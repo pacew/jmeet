@@ -69,18 +69,30 @@ def fix_certs():
             if want != have:
                 run(f"sudo cp {src} {dest}")
 
+def certs_pre():
+    if not os.path.isfile("/etc/ssl/meet.pacew.org.crt"):
+        run(("sudo cp /etc/apache2/wildcard.pacew.org.key"
+             " /etc/ssl/meet.pacew.org.key"))
+        run(("sudo cp /etc/apache2/wildcard.pacew.org.crt"
+             " /etc/ssl/meet.pacew.org.crt"))
+
 def main():
     global yes_flag
     
     if len(sys.argv) > 1 and sys.argv[1] == "-y":
         yes_flag = True
 
+    if not os.path.isfile("/etc/apache2/wildcard.pacew.org.crt"):
+        print("need to push the wildcard first")
+        sys.exit(1)
+
     setup_keyring()
     setup_apt_sources()
 
-    run("sudo apt install jitsi-meet -y")
+    certs_pre()
 
-    fix_certs()
+    print("now run")
+    print("sudo apt install jitsi-meet")
 
 if __name__ == "__main__":
     main()

@@ -1,0 +1,8 @@
+#! /bin/sh
+
+set -x
+files='wildcard.pacew.org.crt wildcard.pacew.org.key'
+sudo tar -cf TMP.w.tar -C /etc/apache2 $files
+scp TMP.w.tar a1.pacew.com:
+ssh a1.pacew.com sudo tar -xf TMP.w.tar -C /etc/apache2
+ssh a1.pacew.com sudo chmod a+r '/etc/apache2/wildcard*'
