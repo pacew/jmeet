@@ -71,7 +71,7 @@ def main():
     setup_apt_sources()
 
     if not os.path.isdir("/etc/jitsi"):
-        print("now run")
+        print("now run, taking defaults and generating certs")
         print("sudo apt install jitsi-meet")
         sys.exit(0)
 
