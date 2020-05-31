@@ -38,13 +38,19 @@ def setup_apt_sources():
         run("sudo apt update")
 
 def setup_certs():
-    if not os.path.isfile("/etc/ssl/meet.pacew.org.crt"):
+    if False and not os.path.isfile("/etc/ssl/meet.pacew.org.crt"):
         run(("sudo cp /etc/apache2/wildcard.pacew.org.key"
              " /etc/ssl/meet.pacew.org.key"))
         run(("sudo cp /etc/apache2/wildcard.pacew.org.crt"
              " /etc/ssl/meet.pacew.org.crt"))
 
-    if os.path.isdir("/etc/jitsi/meet"):
+    want = open("/etc/apache2/wildcard.pacew.org.crt").read()
+    try:
+        have = open("/etc/jitsi/meet/meet.pacew.org.crt").read()
+    except:
+        have = ""
+
+    if want != have:
         run(("sudo cp /etc/apache2/wildcard.pacew.org.key"
              " /etc/jitsi/meet/meet.pacew.org.key"))
         run(("sudo cp /etc/apache2/wildcard.pacew.org.crt"
