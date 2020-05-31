@@ -6,3 +6,4 @@ sudo tar -cf TMP.w.tar -C /etc/apache2 $files
 scp TMP.w.tar a1.pacew.com:
 ssh a1.pacew.com sudo tar -xf TMP.w.tar -C /etc/apache2
 ssh a1.pacew.com sudo chmod a+r '/etc/apache2/wildcard*'
+ssh a1.pacew.com rm -f TMP.w.tar

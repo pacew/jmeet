@@ -77,8 +77,7 @@ def main():
 
     setup_certs()
 
-    if not os.path.isfile("/etc/apache2/htpasswd"):
-        print("see NOTES about htpasswd")
+    print("see ./NOTES about authentication")
 
 if __name__ == "__main__":
     main()
